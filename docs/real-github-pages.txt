@@ -1,0 +1,23 @@
+whycached 0.1.0 · https://mrzroot.github.io/
+HTTP 200 · 111383 bytes · sha 0772d21a18fe · layers: GitHub Pages (Fastly), nginx/proxy cache
+  plain             200 sha 0772d21a18fe age=123 etag="6ad763a6-1b317" X-Cache: HIT | x-proxy-cache: MISS
+  plain2            200 sha 0772d21a18fe age=123 etag="6ad763a6-1b317" X-Cache: HIT | x-proxy-cache: MISS
+  query-bust        200 sha 0772d21a18fe age=123 etag="6ad763a6-1b317" X-Cache: HIT | x-proxy-cache: MISS
+  no-cache-request  200 sha 0772d21a18fe age=123 etag="6ad763a6-1b317" X-Cache: HIT | x-proxy-cache: MISS
+  conditional       304 sha e3b0c44298fc age=123 etag="6ad763a6-1b317" X-Cache: HIT
+
+LIKELY (1)
+
+! browser · your browser can legitimately keep showing the old copy
+    why:    Cache-Control: max-age=600
+            a browser may reuse its stored copy of this URL for up to 7m 57s more without asking the server at all
+    fix:    hard reload: Ctrl+Shift+R (Cmd+Shift+R on macOS), or DevTools > Network > 'Disable cache' while it is open
+            or test in a private window; or open https://mrzroot.github.io/?_whycached=1792823186
+            GitHub Pages fixes this header at max-age=600 and cannot be changed: a deploy is fully visible to everyone within about 10 minutes
+
+OK (1)
+
+✓ shared · a shared cache served this response, but it is identical to the origin's
+    why:    GitHub Pages (Fastly): X-Cache: HIT
+            nginx/proxy cache: x-proxy-cache: MISS
+            normal and cache-busted bodies match (sha 0772d21a18fe)

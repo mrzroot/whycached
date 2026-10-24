@@ -1,0 +1,62 @@
+$ whycached http://127.0.0.1:41787/shop/ --expect v2
+whycached 0.1.0 · http://127.0.0.1:41787/shop/
+HTTP 200 · 56 bytes · sha e1ee030ec3f1 · layers: Cloudflare
+
+STALE (1)
+
+✗ shared · a shared cache (Cloudflare) is serving an older copy than the origin
+    why:    the normal response (sha e1ee030ec3f1) differs from the cache-busted one (?_whycached=…, sha ede31a85ec4a)
+            a request with 'Cache-Control: no-cache' returns different content (sha ede31a85ec4a) than the normal one (sha e1ee030ec3f1)
+            'v2' is MISSING in the normal response and present in the fresh one
+            Age: 4120 = the copy you got is 68m 40s old
+            it stays fresh for 4h 00m (max-age); about 2h 51m left
+            Cloudflare: cf-cache-status: HIT
+    fix:    Dashboard > Caching > Configuration > Purge Cache > Custom Purge > the URL
+            curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/purge_cache" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" --data '{"files":["http://127.0.0.1:41787/shop/"]}'
+            long term: send 'Cache-Control: no-cache' (or a short s-maxage) on the HTML, and put a content hash in asset file names
+
+LIKELY (1)
+
+! browser · your browser can legitimately keep showing the old copy
+    why:    Cache-Control: public, max-age=14400
+            a browser may reuse its stored copy of this URL for up to 2h 51m more without asking the server at all
+    fix:    hard reload: Ctrl+Shift+R (Cmd+Shift+R on macOS), or DevTools > Network > 'Disable cache' while it is open
+            or test in a private window; or open http://127.0.0.1:41787/shop/?_whycached=1792823155
+            fix for users: send 'Cache-Control: no-cache' (revalidate every time, still cheap with ETag) on the HTML
+
+$ whycached http://127.0.0.1:41787/pwa/
+whycached 0.1.0 · http://127.0.0.1:41787/pwa/
+HTTP 200 · 190 bytes · sha 42348a55d07e · no CDN headers seen
+
+LIKELY (3)
+
+! service-worker · a service worker may be answering from its own cache
+    why:    http://127.0.0.1:41787/pwa/sw.js is registered by the page
+            it uses the Cache API; cache names: pwa-v1
+            cache-first/precache strategy: it answers from its own cache BEFORE the network, so no HTTP header above matters for those requests
+            no skipWaiting(): a new worker waits until every tab of the site is closed
+            the worker script itself has Cache-Control: public, max-age=86400: it can be re-fetched from HTTP cache for 24h 00m, so updates are delayed
+    fix:    serve the service-worker file with 'Cache-Control: no-cache' (never a long max-age)
+            DevTools > Application > Service Workers > Unregister (and tick 'Update on reload'); Application > Storage > Clear site data
+            change the cache name/version string in the worker so old caches are deleted in the 'activate' event
+
+! asset · /static/app.css is cached for 365d 0h under a name that never changes
+    why:    Cache-Control: public, max-age=31536000
+            the URL has no content hash or version, so after a deploy browsers keep the old file until it expires
+    fix:    rename on change (app.3f9a1c.js) or add ?v=<hash>; or shorten max-age and use ETag revalidation
+
+! asset · /static/app.js is cached for 365d 0h under a name that never changes
+    why:    Cache-Control: public, max-age=31536000
+            the URL has no content hash or version, so after a deploy browsers keep the old file until it expires
+    fix:    rename on change (app.3f9a1c.js) or add ?v=<hash>; or shorten max-age and use ETag revalidation
+
+$ whycached http://127.0.0.1:41787/docs/
+whycached 0.1.0 · http://127.0.0.1:41787/docs/
+HTTP 200 · 148 bytes · sha e7eca88c3067 · no CDN headers seen
+
+OK (1)
+
+✓ info · no caching layer found that would explain an old version
+    why:    normal, repeated, cache-busted and no-cache requests all return the same content
+            Cache-Control: no-cache
+    fix:    if you still see an old version, check you are on the right URL/environment and that the deploy finished
