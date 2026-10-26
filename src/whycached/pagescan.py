@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Dict, List
 from urllib.parse import urljoin, urlparse
 
 SW_REGISTER = re.compile(r"""serviceWorker\s*\.\s*register\(\s*['"`]([^'"`]+)['"`]""")
