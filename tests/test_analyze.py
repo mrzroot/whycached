@@ -21,7 +21,7 @@ def test_stale_cdn_confirmed(box):
     box.routes["/"] = route
     rep = analyze(box.base + "/", expect="v2")
     assert ("STALE", "shared") in levels(rep)
-    f = [x for x in rep.findings if x.level == "STALE"][0]
+    f = next(x for x in rep.findings if x.level == "STALE")
     assert "Cloudflare" in f.title and any("purge" in x.lower() for x in f.fix)
     assert rep.worst == "STALE"
 
@@ -58,7 +58,7 @@ def test_service_worker_with_long_cache(box):
     box.routes["/sw.js"] = lambda h: (200, {"Content-Type": "text/javascript", "Cache-Control": "max-age=86400"},
                                       "caches.open('x'); caches.match(e.request).then(r=>r)")
     rep = analyze(box.base + "/")
-    sw = [f for f in rep.findings if f.layer == "service-worker"][0]
+    sw = next(f for f in rep.findings if f.layer == "service-worker")
     assert sw.level == "LIKELY" and any("no-cache" in x for x in sw.fix)
 
 
