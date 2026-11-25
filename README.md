@@ -63,6 +63,19 @@ uvx --from git+https://github.com/mrzroot/whycached whycached --demo
 pip install -e .                                           # from a clone
 ```
 
+
+## Check a stale deploy without purging anything
+
+The local demo reproduces cache behavior without contacting your site. For your own deployment, start with a known release marker via --expect, then compare normal and fresh response evidence.
+
+```sh
+whycached --demo
+```
+
+Different responses alone can also reflect personalization or request routing. A missing marker and consistent cache headers give stronger evidence. Try a non-personalized staging URL first, and never include credentials in a shared command or report.
+
+See the [bilingual scenario on the project page](docs/index.html#first-check).
+
 ## Usage
 
 ```sh
